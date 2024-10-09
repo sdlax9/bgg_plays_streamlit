@@ -8,21 +8,22 @@ from libbgg.apiv2 import BGG
 def extract_page_data(page_data: libbgg.infodict.InfoDict) -> Tuple[list, list]:
     """Extracts play and player data from a page"""
     plays = page_data['plays']['play']
+
     play_data = []
     players_data = []
-
     for play in plays:
         play_id = play['id']
         game = play['item']['name']
+        game_id = play['item']['objectid']
+        comments = (play['comments']['TEXT'] if 'comments' in play else '')
         date = play['date']
         plrs = play['players']['player']
-
-        if isinstance(plrs, list): # multiple players
+        if isinstance(plrs, list):
             plrs = [dict(plr) for plr in plrs]
             for plr in plrs:
                 plr.update({'play_id': play_id})
                 players_data.append(plr)
-        else: # single player
+        else:
             plrs = dict(plrs)
             plrs.update({'play_id': play_id})
             players_data.append(plrs)
@@ -30,6 +31,8 @@ def extract_page_data(page_data: libbgg.infodict.InfoDict) -> Tuple[list, list]:
             {
                 'play_id': play_id,
                 'game': game,
+                'game_id': game_id,
+                'comments': comments,
                 'date': date,
             }
         )
@@ -125,3 +128,18 @@ def get_unique_games(
         prev_days,
     )
     return len(user_name_plays_df['game'].unique())
+
+@st.cache_data
+def get_active_players(
+    user_plays_df: pd.DataFrame,
+    active_days: int = 365,
+    min_plays: int = 5,
+) -> list:
+    '''Returns list of players with min plays within a number of days'''
+    active_df = user_plays_df[
+        (user_plays_df['name'] != 'Anonymous player') &
+        (user_plays_df['date'] >= (datetime.datetime.now() - datetime.timedelta(days=active_days))) &
+        (user_plays_df['game'] != 'Poker')
+    ]
+    active_wins_agg = active_df.groupby('name')['name'].count().sort_values(ascending=False)
+    return list(active_wins_agg[active_wins_agg >= min_plays].index)

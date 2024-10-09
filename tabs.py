@@ -43,6 +43,8 @@ def play_stats_metric_cols(
         )
 
 
+
+
 def play_stats_tab(user_plays_df, user_name) -> None:
     '''Displays play statistics tabs'''
     tab_30_day, tab_year, tab_all = st.tabs(['Last 30 Days', 'Last 365 Days', 'All Time'])
