@@ -4,6 +4,7 @@ from data import (
 )
 from tabs import(
     play_stats_tab,
+    win_stats_tab
 )
 
 st.set_page_config(layout="wide")
@@ -25,7 +26,20 @@ if user_name:
     st.markdown(f'# {user_name}')
     st.divider()
 
-    play_stats = st.tabs([
-        'Play Statistics'
+    played_games = sorted(list(user_plays_df['game'].unique()))
+    games_selected = st.multiselect(
+        label='Games',
+        options=played_games,
+        key='games_multiselect'
+    )
+
+    play_stats, win_stats = st.tabs([
+        'Play Stats',
+        'Win Stats'
     ])
-    play_stats_tab(user_plays_df, user_name)
+
+    with play_stats:
+        play_stats_tab(user_plays_df, user_name, games_selected)
+
+    with win_stats:
+        win_stats_tab(user_plays_df, user_name, games_selected)

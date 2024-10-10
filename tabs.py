@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 import pandas as pd
 import streamlit as st 
 from data import (
@@ -6,10 +6,18 @@ from data import (
     get_total_plays,
     get_unique_games,
 )
+from plots import (
+    show_wins_heatmap
+)
+from constants import (
+    DATE_BINS,
+    DATE_BIN_TABS
+)
+
 def play_stats_metric_cols(
-        prev_days: Optional[int],
         user_plays_df: pd.DataFrame,
-        user_name: str
+        user_name: str,
+        prev_days: Optional[int],
     ) -> None:
     '''Displays play stats metric columns'''
     if prev_days:
@@ -42,18 +50,22 @@ def play_stats_metric_cols(
             value=unique_games
         )
 
-
-
-
-def play_stats_tab(user_plays_df, user_name) -> None:
+def play_stats_tab(user_plays_df: pd.DataFrame, user_name: str, games_selected: Optional[List[str]]) -> None:
     '''Displays play statistics tabs'''
-    tab_30_day, tab_year, tab_all = st.tabs(['Last 30 Days', 'Last 365 Days', 'All Time'])
+    for date_bin, tab in zip(DATE_BINS, st.tabs(DATE_BIN_TABS)):
+        with tab:
+            if date_bin:
+                st.markdown(f'## Plays Last {date_bin} Days')
+            else:
+                st.markdown(f'## Plays All Time')
+            play_stats_metric_cols(user_plays_df, user_name, prev_days=date_bin)
 
-    with tab_30_day:
-        play_stats_metric_cols(30, user_plays_df, user_name)
-
-    with tab_year:
-        play_stats_metric_cols(365, user_plays_df, user_name)
-
-    with tab_all:
-        play_stats_metric_cols(None, user_plays_df, user_name)
+def win_stats_tab(user_plays_df: pd.DataFrame, user_name: str, games_selected: Optional[List[str]]) -> None:
+    '''Displays win statistics tabs'''
+    for date_bin, tab in zip(DATE_BINS, st.tabs(DATE_BIN_TABS)):
+        with tab:
+            if date_bin:
+                st.markdown(f'## Wins Last {date_bin} Days')
+            else:
+                st.markdown(f'## Wins All Time')
+            show_wins_heatmap(user_plays_df, date_bin, games_selected)
