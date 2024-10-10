@@ -15,7 +15,7 @@ def show_wins_heatmap(
 ):
     '''Displays heatmap of active player wins over time'''
     d3_date_formats = {
-        30: 'date',
+        30: 'monthdate',
         365: 'yearmonthdate',
         None: 'yearquarter'
     }

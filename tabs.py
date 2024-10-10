@@ -20,11 +20,8 @@ def play_stats_metric_cols(
         prev_days: Optional[int],
     ) -> None:
     '''Displays play stats metric columns'''
-    if prev_days:
-        st.markdown(f'## Play Statistics Last {prev_days} Days')
-    else:
-        st.markdown('## Play Statistics All Time')
-    col1, col2, col3, col4 = st.columns(4)
+    total_cols = st.columns(4)
+    top_5_cols = st.columns(5)
 
     top_5_games = get_top_k_games(
         user_plays_df,
@@ -33,22 +30,22 @@ def play_stats_metric_cols(
     )
     total_plays = get_total_plays(user_plays_df, user_name, prev_days)
     unique_games = get_unique_games(user_plays_df, user_name, prev_days)
-    with col2:
-        for game, plays in top_5_games:
-            st.metric(
-                label=game,
-                value=plays,
-            )
-
-    with col3:
+    with total_cols[1]:
         st.metric(
             label='Total Plays',
             value=total_plays
         )
+    with total_cols[2]:
         st.metric(
-            label='Unique Games',
+            label='Unique Plays',
             value=unique_games
         )
+    for (game, plays), top_5_col in zip(top_5_games, top_5_cols):
+        with top_5_col:                                
+            st.metric(
+                label=game,
+                value=plays,
+            )
 
 def play_stats_tab(user_plays_df: pd.DataFrame, user_name: str, games_selected: Optional[List[str]]) -> None:
     '''Displays play statistics tabs'''
